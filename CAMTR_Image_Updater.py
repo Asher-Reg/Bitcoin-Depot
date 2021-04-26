@@ -3,6 +3,11 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import pickle
 import os
+import pandas as pd
+import os
+import requests
+import pathlib
+import shutil
 
 f = open("links.csv","r")
 
@@ -72,11 +77,7 @@ while z < len(myList):
             p-= 1
 
             # Load the Pandas libraries with alias 'pd'
-            import pandas as pd
-            import os
-            import requests
-            import pathlib
-            import shutil
+
 
             # Read data from file 'filename.csv'
             # (in the same directory that your python process is based)
