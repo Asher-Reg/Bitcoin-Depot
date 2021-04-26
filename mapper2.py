@@ -1,95 +1,192 @@
-import googlemaps
+import time
+import hmac
+import hashlib
 import requests
 import json
-import pprint
-import time
+import string
+import datetime as dt
+from datetime import datetime
 import pandas as pd
-import csv
+from os import path
+import os
+import folium
+from jsondiff import diff
+import base64
+from io import BytesIO
+from folium.plugins import MarkerCluster
+from folium.features import CustomIcon
+from pytrends.request import TrendReq
+import pytrends
+#Country	State	City	Business	Address	Zip Code	Lat	Lng	Type	Manufacturer	Operator	Hours	Verification is required via SMS.	Installed	Fiat	Crypto	Prices
 
-tokenList = []
-file = csv.reader(open('latlng.csv'), delimiter=',')
-tstamp = str(time.time())
-gmaps = googlemaps.Client(key='AIzaSyDULVHPXxP19fwZdxDYAIbhzx7TM57PrPs')
+# pytrends = TrendReq(hl='en-US', tz=360)
+# kw_list = ["Bitcoin atm near me"]
+# pytrends.build_payload(kw_list, geo='US-AL')
+# search_df = pytrends.interest_by_region(resolution='CITY', inc_low_vol=True, inc_geo_code=True)
+# print(search_df)
+
+class Object:
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__,
+            sort_keys=True, indent=4)
+
+m = folium.Map(
+    location=[33.8836365,-84.382076],
+    zoom_start=12
+    )
+
+geoJson = "metroarea.json"
+
+folium.GeoJson(
+    geoJson,
+    name='geojson'
+).add_to(m)
+
+marker_cluster = folium.plugins.MarkerCluster()
+marker_cluster2 = folium.plugins.MarkerCluster()
+
+marker_cluster2.add_to(m)
+marker_cluster.add_to(m)
+folium.LayerControl().add_to(m)
+
+
+timestamp = str(round(time.time(),3))
+public_key = 'ngizmtayzjmwyzgznzjhoduyyziymja'
+secret_key = bytes('mzg1odq4mzzhn2rjzjbiztk2y2i3mzhjymrjntjmmwfhywfkotmzyziyma', 'utf-8')
+
+payload = str(timestamp) + '|' + str(public_key)
+
+digest = hmac.new(secret_key, payload.encode('utf-8'), hashlib.sha256).hexdigest()
+filename = dt.date.today().strftime('%Y-%m-%d')+".json"
+
+if not path.exists(filename):
+    url = 'https://coinatmradar.com/operator-api/get/locationsinfo/'
+    filename = dt.date.today().strftime('%Y-%m-%d')+".json"
+    #headers = '{\'x-stamp\' : '+timestamp+', \'x-token\' : '+public_key+', \'x-signature\' : '+digest+'}'
+    #jheaders = json.dumps(headers)
+    #print(jheaders)
+
+    catmrSession = requests.Session()
+    res = catmrSession.get(url)
+    cookies = dict(res.cookies)
+
+    print(cookies)
+
+    res = catmrSession.post(url,
+    #    headers = {'content-type': 'application/json' },
+        headers = {
+            'x-stamp' : timestamp,
+            'x-token' : public_key,
+            'x-signature' : digest},
+        cookies = cookies)
+
+
+
+    f = open(filename, "w")
+    f.write(res.text)
+else:
+    with open(dt.date.today().strftime('%Y-%m-%d')+".json") as json_file:
+        data3 = json.load(json_file)
+        if data3['is_success'] ==  0:
+            print('BAD DATA')
+        else:
+            print('todays data is up to date')
+
+with open(filename) as f:
+    data = json.load(f)
+
+with open('2020-12-15.json') as g:
+    data2 = json.load(g)
+
+
+
 i=0
-for line in file:
-    print(i)
-    i+=1
-    payload = {'key': 'AIzaSyDULVHPXxP19fwZdxDYAIbhzx7TM57PrPs','location':line[0]+ ',' +line[1],'radius':'50000','query': 'Coinme at Coinstar - Bitcoin Kiosk'}
-    r = requests.get('https://maps.googleapis.com/maps/api/place/textsearch/json',params = payload)
-    data = r.json()
-    x = 0
-    w = open("newBTCCoinstarAddresses"+ tstamp +".csv","a")
-    for z in data['results']:
-        try:
-            w.write(str(data['results'][x]['formatted_address'])+'|'+ str(data['results'][x]['geometry']['location']['lat']) +"|"+ str(data['results'][x]['geometry']['location']['lng'])+"\n")
-            print(str(z['name'])+str(data['results'][x]['formatted_address'])+'|'+ str(data['results'][x]['geometry']['location']['lat']) +"|"+ str(data['results'][x]['geometry']['location']['lng']))
-            x+=1
-        except:
-            print("WTFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")
-    w.close
+weekAgo = time.time() - 604800*4
+print(data)
+for j in data['locations']:
     try:
-        tokenList.append(data['next_page_token'])
-    except:
-        pass
+        a = time.mktime(datetime.strptime(data['locations'][j]['installed'], "%Y-%m-%d").timetuple())
+    except Exception as e:
+        print(e)
+    if a > weekAgo:
+        print (datetime.utcfromtimestamp(a).strftime('%Y-%m-%d %H:%M:%S'))
+        try:
+            folium.Marker(
+                location=[float(data['locations'][j]['lat']),float(data['locations'][j]['lng'])],
+                icon= folium.features.CustomIcon(icon_image="new.png", icon_size=(41,38)),
+                prefer_canvas=True
+            ).add_to(marker_cluster2)
+        except Exception as e:
+            print(e)
 
 
-tokenList2 = []
-for i in tokenList:
-    print(i)
-    payload = {'key': 'AIzaSyDULVHPXxP19fwZdxDYAIbhzx7TM57PrPs','pagetoken':i}
-    r = requests.get('https://maps.googleapis.com/maps/api/place/textsearch/json',params = payload)
-    data = r.json()
-    x = 0
-    w = open("newBTCCoinstarAddresses"+ tstamp +".csv","a")
-    for z in data['results']:
-        try:
-            w.write(str(data['results'][x]['formatted_address'])+'|'+ str(data['results'][x]['geometry']['location']['lat']) +"|"+ str(data['results'][x]['geometry']['location']['lng'])+"\n")
-            print(str(data['results'][x]['name'])+str(data['results'][x]['formatted_address'])+'|'+ str(data['results'][x]['geometry']['location']['lat']) +"|"+ str(data['results'][x]['geometry']['location']['lng']))
-            x+=1
-        except:
-            print("WTFFFFFFFFFF")
-    w.close
-    try:
-        tokenList2.append(data['next_page_token'])
-    except:
-        pass
-tokenList3 = []
-for i in tokenList2:
-    print(i)
-    payload = {'key': 'AIzaSyDULVHPXxP19fwZdxDYAIbhzx7TM57PrPs','pagetoken':i}
-    r = requests.get('https://maps.googleapis.com/maps/api/place/textsearch/json',params = payload)
-    data = r.json()
-    x = 0
-    w = open("newBTCCoinstarAddresses"+ tstamp +".csv","a")
-    for z in data['results']:
-        try:
-            w.write(str(data['results'][x]['formatted_address'])+'|'+ str(data['results'][x]['geometry']['location']['lat']) +"|"+ str(data['results'][x]['geometry']['location']['lng'])+"\n")
-            print(str(data['results'][x]['name'])+str(data['results'][x]['formatted_address'])+'|'+ str(data['results'][x]['geometry']['location']['lat']) +"|"+ str(data['results'][x]['geometry']['location']['lng']))
-            x+=1
-        except:
-            print("WTFFFFFFFFFF")
-    w.close
-    try:
-        tokenList3.append(data['next_page_token'])
-    except:
-        pass
 
-for i in tokenList3:
-    print(i)
-    payload = {'key': 'AIzaSyDULVHPXxP19fwZdxDYAIbhzx7TM57PrPs','pagetoken':i}
-    r = requests.get('https://maps.googleapis.com/maps/api/place/textsearch/json',params = payload)
-    data = r.json()
-    x = 0
-    w = open("newBTCCoinstarAddresses"+ tstamp +".csv","a")
-    for z in data['results']:
+data = data['locations']
+z = 0
+# print(data['data'])
+# ok = pd.read_json(json.dumps(data['data']))
+# print(umm[0])
+
+
+#
+# markerTypes = {
+#     "Bitcoin Depot" : "icon",
+#     "CoinFlip Bitcoin ATMs" : "icon",
+#     "CoinCloud" : "icon",
+#     "RockItCoin" : "icon",
+#     "CoinSource" : "icon",
+#     "Bitcoin of America" : "icon",
+#     "National Bitcoin ATM" : "icon",
+#     "Bitstop" :  "icon",
+#     "Digital Mint" : "icon",
+#     "ATM Coiners" : "icon",
+#     "Athena Bitcoin" : "icon"
+# }
+#
+
+
+for key, value in data.items():
+    while z < 13000:
+        html = "<style>\n div.a {text-align: center;\n}\n</style>\n<div class=\"a\"><h2>"+data[key]['business'] +"</h2></div><br><p style=\"text-align: left; width:24%; display: inline-block;\">Address:<br>Operator:<br>Install Date:<br>Hours:</p>\n<p style=\"text-align: right; width:75%;  display: inline-block;\">"+data[key]['address'].replace('\n',' ').replace(' USA','').replace('United States','')+"<br>"+str(data[key]['operator'])+"<br>"+data[key]['installed']+"<br>"+str(data[key]['hours']).replace('m S','m<br>S')+"</p>"
+
+        # html = "<style>\n div.a {text-align: center;\n}\n</style>\n<div class=\"a\"><h2>"+data[key]['business'] +"</h2></div><br><p style=\"text-align:left;\">\n"+"Address:<br><p style=\"text-align:left;\">Operator:</p></p></span></span>"+"\n<span style=\"float:right;\">" + data[key]['address'].replace('\n',' ').replace(' USA','').replace('United States','')+"<br><span style=\"float:right;\">"+data[key]['operator']+"</span></span></p>"
+        iframe = folium.IFrame(html)
+        popup = folium.Popup(iframe, min_width=500, max_width=500)
+
+
+
+        colors = ['red', 'blue', 'green', 'purple', 'orange', 'darkred', 'lightred', 'beige', 'darkblue', 'darkgreen', 'cadetblue', 'darkpurple', 'white', 'pink', 'lightblue', 'lightgreen', 'gray', 'black', 'lightgray']
+
+        print(os.getcwd())
+
         try:
-            w.write(str(data['results'][x]['formatted_address'])+'|'+ str(data['results'][x]['geometry']['location']['lat']) +"|"+ str(data['results'][x]['geometry']['location']['lng'])+"\n")
-            print(str(data['results'][x]['name'])+str(data['results'][x]['formatted_address'])+'|'+ str(data['results'][x]['geometry']['location']['lat']) +"|"+ str(data['results'][x]['geometry']['location']['lng']))
-            x+=1
-        except:
-            print("WTFFFFFFFFFF")
-    w.close
-    try:
-        tokenList3.append(data['next_page_token'])
-    except:
-        pass
+            folium.Marker(
+                location=[str(data[key]['lat']),str(data[key]['lng'])],
+                popup= popup,
+                icon= folium.features.CustomIcon(icon_image= data[key]['operator'] + " sprite.png", icon_size=(26,36)),
+                prefer_canvas=True
+            ).add_to(marker_cluster)
+        except Exception as e:
+            print(e)
+            folium.Marker(
+                location=[str(data[key]['lat']),str(data[key]['lng'])],
+                popup= popup,
+                icon= folium.Icon(color= colors[ord(data[key]['operator'][:1])*ord(data[key]['operator'][-2]) %19], icon='bitcoin', prefix='fa'),
+                prefer_canvas=True
+            ).add_to(marker_cluster)
+        z += 1
+        break
+
+# Add effects to newly add items and delisted locationsinfo
+
+# Compare json of today's data versus data from a week Agoura
+
+
+
+
+    # for key, value in data[key].items():
+    #      print("     "+ key + ":" + str(value))
+    #      break
+
+
+m.save('map'+dt.date.today().strftime(' %Y-%m-%d-%H-%M-%S')+'.html')
