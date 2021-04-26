@@ -5,7 +5,7 @@ import pickle
 import os
 
 #This program navigates www.coinatmradar.com in order to apply images to their respective business listing
-#This task was normally done by hand, but this program does the whole job in a matter of minutes
+#This task was normally done by hand, but this program does the whole job in a matter of minutes since no API is available for this action
 
 
 f = open("links.csv","r")
