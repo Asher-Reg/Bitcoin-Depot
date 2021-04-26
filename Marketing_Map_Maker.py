@@ -20,7 +20,7 @@ import pytrends
 
 #This program takes the location data created by the Mapper_Final.py program and plots them on a map widget powered by folium
 #This program cross references all previous iterations to isolate new locations as well as closures. New locations are then marked
-#Also has a marketing map that utilizes the Google Trends API. This is meant to catch closures of business in areas where Google Trends is seeing an uptick in activity
+#Also has a geo-json marketing map that utilizes the Google Trends API. This is meant to catch closures of business in areas where Google Trends is seeing an uptick in activity
 #You may view a sample output of this program at Marketing_Map_2021-02-25.html  within github
 
 
