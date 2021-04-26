@@ -1,6 +1,8 @@
 import calendar
 import csv
 
+#This program alters the date format of a csv in batches so they are compatible with data migrations
+
 def intervening_days(day1, day2):
     weektest = list(calendar.day_name)*2
     d1 = weektest.index(day1)
