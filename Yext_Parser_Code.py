@@ -2,6 +2,10 @@ from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 
+#This program logs into Yext in a chrome browser and navigates the login page
+#Once logged in the program navigates to the 'duplicates' page and checks all of the potential duplicate listings within marketing platforms
+#Marks duplicates for removal and leaves non-duplicates alone
+
 f = open("dups.csv","r")
 
 myList = []
