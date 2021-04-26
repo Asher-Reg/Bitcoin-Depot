@@ -17,13 +17,12 @@ from folium.plugins import MarkerCluster
 from folium.features import CustomIcon
 from pytrends.request import TrendReq
 import pytrends
-#Country	State	City	Business	Address	Zip Code	Lat	Lng	Type	Manufacturer	Operator	Hours	Verification is required via SMS.	Installed	Fiat	Crypto	Prices
 
-# pytrends = TrendReq(hl='en-US', tz=360)
-# kw_list = ["Bitcoin atm near me"]
-# pytrends.build_payload(kw_list, geo='US-AL')
-# search_df = pytrends.interest_by_region(resolution='CITY', inc_low_vol=True, inc_geo_code=True)
-# print(search_df)
+#This program takes the location data created by the Mapper_Final.py program and plots them on a map widget powered by folium
+#This program cross references all previous iterations to isolate new locations as well as closures. New locations are then marked
+#Also has a marketing map that utilizes the Google Trends API. This is meant to catch closures of business in areas where Google Trends is seeing an uptick in activity
+#You may view a sample output of this program at Marketing_Map_2021-02-25.html  within github
+
 
 class Object:
     def toJSON(self):
