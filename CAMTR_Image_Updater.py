@@ -9,6 +9,8 @@ import requests
 import pathlib
 import shutil
 
+#Logs in to www.coinatmradar.com and uploads images to their respective listings
+
 f = open("links.csv","r")
 
 myList = []
