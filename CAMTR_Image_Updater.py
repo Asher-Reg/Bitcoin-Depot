@@ -25,15 +25,6 @@ cookies = pickle.load(open("cookies.pkl", "rb"))
 for cookie in cookies:
     web.add_cookie(cookie)
 
-# last = web.find_element_by_xpath('//*[@id="g16-name"]')
-# time.sleep(2)
-# last.send_keys('brandon@bitcoindepot.com')
-# last = web.find_element_by_xpath('//*[@id="g16-email"]')
-# last.send_keys('BlueBottleOpener20!')
-# input("Complete Captcha...")
-# submit = web.find_element_by_xpath('/html/body/div[2]/div/div/form/p/input')
-# submit.click()
-# time.sleep(2)
 z=0
 
 while z < len(myList):
@@ -44,23 +35,6 @@ while z < len(myList):
     print("okay..")
     time.sleep(800)
 
-
-    # checkboxes = web.find_elements_by_xpath("//input[@type='checkbox']")
-    # notaduplicate = web.find_elements_by_class_name("btn btn-white suppression-action js-not-a-duplicate")
-    # addresses = web.find_elements_by_class_name("mw-150")
-    # checkboxes.pop(0)
-    # a = len(checkboxes)
-    #
-    #
-    # for address in addresses:
-    #     new_addy = address.text.split()
-    # i = 0
-    # for checkbox in checkboxes:
-    #     time.sleep(0.05)
-    #     if myList[z]=="DELETE":
-    #         web.execute_script("arguments[0].click();", checkbox)
-    #         i +=1
-    #     z+=1
 
 
     input("Begin marking non-duplicates...")
@@ -112,5 +86,3 @@ while z < len(myList):
                     except Exception as e:
                         print(str(e))
                         break
-            # C:\Users\Asher\Desktop\GrandScan\ImageMaster
-            # C:\Users\Asher\Desktop\GrandScan\ImageMaster\bitcoin-atm-near-me-20424-Kuykendahl-Rd-Spring-TX-77379
